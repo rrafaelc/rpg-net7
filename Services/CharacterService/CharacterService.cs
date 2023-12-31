@@ -44,5 +44,38 @@ namespace rpg.Services.CharacterService
             serviceResponse.Data = _mapper.Map<CharacterResponseDto>(character);
             return serviceResponse;
         }
+
+        public async Task<ServiceResponse<CharacterResponseDto>> UpdateCharacter(UpdateCharacterRequestDto updatedCharacter)
+        {
+            var serviceResponse = new ServiceResponse<CharacterResponseDto>();
+            try
+            {
+                if (updatedCharacter == null)
+                    throw new Exception("Invalid input: updatedCharacter is null");
+
+                var character = characters.FirstOrDefault(x => x.Id == updatedCharacter.Id)
+                ?? throw new Exception($"Character with id '{updatedCharacter.Id}' not found");
+                character.Name = updatedCharacter.Name ?? character.Name;
+                character.HitPoints = updatedCharacter.HitPoints ?? character.HitPoints;
+                character.Strength = updatedCharacter.Strength ?? character.Strength;
+                character.Defense = updatedCharacter.Defense ?? character.Defense;
+                character.Intelligence = updatedCharacter.Intelligence ?? character.Intelligence;
+                character.Class = updatedCharacter.Class ?? character.Class;
+                serviceResponse.Data = _mapper.Map<CharacterResponseDto>(character);
+                return serviceResponse;
+            }
+            catch (ArgumentNullException ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = "ArgumentNullException: " + ex.Message;
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+
+            return serviceResponse;
+        }
     }
 }
