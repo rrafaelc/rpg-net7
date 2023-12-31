@@ -9,5 +9,6 @@ namespace rpg.Services.CharacterService
         Task<ServiceResponse<CharacterResponseDto>> GetCharacterById(int id);
         Task<ServiceResponse<CharacterResponseDto>> AddCharacter(AddCharacterRequestDto newCharacter);
         Task<ServiceResponse<CharacterResponseDto>> UpdateCharacter(UpdateCharacterRequestDto updatedCharacter);
+        Task DeleteCharacter(int id);
     }
 }

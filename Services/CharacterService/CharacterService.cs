@@ -77,5 +77,13 @@ namespace rpg.Services.CharacterService
 
             return serviceResponse;
         }
+
+        public async Task DeleteCharacter(int id)
+        {
+            var deletedCharacter = characters.RemoveAll(x => x.Id == id);
+
+            if (deletedCharacter == 0)
+                throw new Exception($"Character with id '{id}' not found");
+        }
     }
 }

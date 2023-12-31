@@ -42,5 +42,19 @@ namespace rpg.Controllers
                 return Ok(response);
             return NotFound(response);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            try
+            {
+                await _characterService.DeleteCharacter(id);
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }
