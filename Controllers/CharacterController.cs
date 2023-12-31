@@ -29,7 +29,7 @@ namespace rpg.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ServiceResponse<List<CharacterResponseDto>>>> Post(AddCharacterRequestDto newCharacter)
+        public async Task<ActionResult<ServiceResponse<CharacterResponseDto>>> Post(AddCharacterRequestDto newCharacter)
         {
             return Ok(await _characterService.AddCharacter(newCharacter));
         }

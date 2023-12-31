@@ -17,13 +17,13 @@ namespace rpg.Services.CharacterService
             _mapper = mapper;
         }
 
-        public async Task<ServiceResponse<List<CharacterResponseDto>>> AddCharacter(AddCharacterRequestDto newCharacter)
+        public async Task<ServiceResponse<CharacterResponseDto>> AddCharacter(AddCharacterRequestDto newCharacter)
         {
-            var serviceResponse = new ServiceResponse<List<CharacterResponseDto>>();
+            var serviceResponse = new ServiceResponse<CharacterResponseDto>();
             var character = _mapper.Map<Character>(newCharacter);
             character.Id = characters.Max(x => x.Id) + 1;
             characters.Add(character);
-            serviceResponse.Data = characters.Select(x => _mapper.Map<CharacterResponseDto>(x)).ToList();
+            serviceResponse.Data = _mapper.Map<CharacterResponseDto>(character);
             return serviceResponse;
         }
 
