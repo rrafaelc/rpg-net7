@@ -12,9 +12,11 @@ namespace rpg.Repositories.CharacterRepository
             _context = context;
         }
 
-        public async Task<List<Character>> FindCharacters()
+        public async Task<List<Character>> FindCharacters(int? userId)
         {
-            return await _context.Characters.ToListAsync();
+            if (userId is null)
+                return await _context.Characters.ToListAsync();
+            return await _context.Characters.Where(x => x.User!.Id == userId).ToListAsync();
         }
 
         public async Task<Character?> FindCharacterById(int id)
