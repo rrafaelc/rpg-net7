@@ -1,20 +1,29 @@
+using System.Security.Claims;
 using AutoMapper;
 using rpg.Dtos.Character;
 using rpg.Models;
 using rpg.Repositories.CharacterRepository;
+using rpg.Repositories.UserRepository;
 
 namespace rpg.Services.CharacterService
 {
     public class CharacterService : ICharacterService
     {
         private readonly IMapper _mapper;
-        public ICharacterRepository _characterRepository;
+        private readonly ICharacterRepository _characterRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IUserRepository _userRepository;
 
-        public CharacterService(IMapper mapper, ICharacterRepository characterRepository)
+        public CharacterService(IMapper mapper, ICharacterRepository characterRepository, IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
         {
+            _httpContextAccessor = httpContextAccessor;
             _characterRepository = characterRepository;
+            _userRepository = userRepository;
             _mapper = mapper;
         }
+
+        private int GetUserId() => int.Parse(_httpContextAccessor.HttpContext!.User
+            .FindFirstValue(ClaimTypes.NameIdentifier)!);
 
         public async Task<ServiceResponse<CharacterResponseDto>> AddCharacter(AddCharacterRequestDto newCharacter)
         {
@@ -23,6 +32,8 @@ namespace rpg.Services.CharacterService
             try
             {
                 var character = _mapper.Map<Character>(newCharacter);
+                character.User = await _userRepository.FindUserById(GetUserId());
+
                 var characterCreated = await _characterRepository.AddCharacter(character);
                 serviceResponse.Data = _mapper.Map<CharacterResponseDto>(characterCreated);
             }
@@ -35,9 +46,9 @@ namespace rpg.Services.CharacterService
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<CharacterResponseDto>>> GetAllCharacters(int userId)
+        public async Task<ServiceResponse<List<CharacterResponseDto>>> GetAllCharacters()
         {
-            var dbCharacters = await _characterRepository.FindCharacters(userId);
+            var dbCharacters = await _characterRepository.FindCharacters(GetUserId());
             var serviceResponse = new ServiceResponse<List<CharacterResponseDto>>
             {
                 Data = dbCharacters.Select(x => _mapper.Map<CharacterResponseDto>(x)).ToList()
@@ -48,7 +59,7 @@ namespace rpg.Services.CharacterService
         public async Task<ServiceResponse<CharacterResponseDto>> GetCharacterById(int id)
         {
             var serviceResponse = new ServiceResponse<CharacterResponseDto>();
-            var dbCharacter = await _characterRepository.FindCharacterById(id);
+            var dbCharacter = await _characterRepository.FindCharacterById(id, GetUserId());
 
             if (dbCharacter is not null)
                 serviceResponse.Data = _mapper.Map<CharacterResponseDto>(dbCharacter);
@@ -69,7 +80,7 @@ namespace rpg.Services.CharacterService
                 if (updatedCharacter == null)
                     throw new Exception("Invalid input: updatedCharacter is null");
 
-                var character = await _characterRepository.FindCharacterById(updatedCharacter.Id)
+                var character = await _characterRepository.FindCharacterById(updatedCharacter.Id, GetUserId())
                 ?? throw new Exception($"Character with id '{updatedCharacter.Id}' not found");
                 character.Name = updatedCharacter.Name ?? character.Name;
                 character.HitPoints = updatedCharacter.HitPoints ?? character.HitPoints;
@@ -92,7 +103,7 @@ namespace rpg.Services.CharacterService
 
         public async Task DeleteCharacter(int id)
         {
-            var dbCharacter = await _characterRepository.FindCharacterById(id)
+            var dbCharacter = await _characterRepository.FindCharacterById(id, GetUserId())
             ?? throw new Exception($"Character with id '{id}' not found"); ;
             await _characterRepository.DeleteCharacter(dbCharacter);
         }

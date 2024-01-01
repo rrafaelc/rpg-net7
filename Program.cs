@@ -5,6 +5,7 @@ using Microsoft.OpenApi.Models;
 using rpg.Data;
 using rpg.Repositories.AuthRepository;
 using rpg.Repositories.CharacterRepository;
+using rpg.Repositories.UserRepository;
 using rpg.Services.AuthService;
 using rpg.Services.CharacterService;
 using Swashbuckle.AspNetCore.Filters;
@@ -38,6 +39,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -54,6 +56,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = false
         };
     });
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 

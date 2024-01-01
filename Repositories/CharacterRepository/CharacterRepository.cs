@@ -19,9 +19,9 @@ namespace rpg.Repositories.CharacterRepository
             return await _context.Characters.Where(x => x.User!.Id == userId).ToListAsync();
         }
 
-        public async Task<Character?> FindCharacterById(int id)
+        public async Task<Character?> FindCharacterById(int id, int userId)
         {
-            return await _context.Characters.FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.Characters.FirstOrDefaultAsync(x => x.Id == id && x.User!.Id == userId);
         }
 
         public async Task<Character> AddCharacter(Character character)
