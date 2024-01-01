@@ -3,6 +3,7 @@ using AutoMapper;
 using rpg.Dtos.Character;
 using rpg.Models;
 using rpg.Repositories.CharacterRepository;
+using rpg.Repositories.SkillRepository;
 using rpg.Repositories.UserRepository;
 
 namespace rpg.Services.CharacterService
@@ -13,12 +14,14 @@ namespace rpg.Services.CharacterService
         private readonly ICharacterRepository _characterRepository;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IUserRepository _userRepository;
+        private readonly ISkillRepository _skillRepository;
 
-        public CharacterService(IMapper mapper, ICharacterRepository characterRepository, IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
+        public CharacterService(IMapper mapper, ICharacterRepository characterRepository, IUserRepository userRepository, ISkillRepository skillRepository, IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
             _characterRepository = characterRepository;
             _userRepository = userRepository;
+            _skillRepository = skillRepository;
             _mapper = mapper;
         }
 
@@ -104,8 +107,31 @@ namespace rpg.Services.CharacterService
         public async Task DeleteCharacter(int id)
         {
             var dbCharacter = await _characterRepository.FindCharacterById(id, GetUserId())
-            ?? throw new Exception($"Character with id '{id}' not found"); ;
+            ?? throw new Exception($"Character with id '{id}' not found");
             await _characterRepository.DeleteCharacter(dbCharacter);
+        }
+
+        public async Task<ServiceResponse<CharacterResponseDto>> AddCharacterSkill(AddCharacterSkillDto newCharacterSkill)
+        {
+            var serviceResponse = new ServiceResponse<CharacterResponseDto>();
+
+            try
+            {
+                var character = await _characterRepository.FindCharacterById(newCharacterSkill.CharacterId, GetUserId())
+                ?? throw new Exception($"Character with id '{newCharacterSkill.CharacterId}' not found");
+                var skill = await _skillRepository.FindSkillById(newCharacterSkill.SkillId)
+                ?? throw new Exception($"Skill with id '{newCharacterSkill.SkillId}' not found");
+                character.Skills!.Add(skill);
+                await _characterRepository.UpdateCharacter(character);
+                serviceResponse.Data = _mapper.Map<CharacterResponseDto>(character);
+            }
+            catch (Exception ex)
+            {
+                serviceResponse.Success = false;
+                serviceResponse.Message = ex.Message;
+            }
+
+            return serviceResponse;
         }
     }
 }

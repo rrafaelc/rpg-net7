@@ -15,16 +15,27 @@ namespace rpg.Repositories.CharacterRepository
         public async Task<List<Character>> FindCharacters(int? userId)
         {
             if (userId is null)
-                return await _context.Characters.ToListAsync();
-            return await _context.Characters.Where(x => x.User!.Id == userId).ToListAsync();
+                return await _context.Characters
+                .Include(x => x.User)
+                .Include(x => x.Weapon)
+                .Include(x => x.Skills)
+                .ToListAsync();
+            return await _context.Characters
+            .Include(x => x.User)
+            .Include(x => x.Weapon)
+            .Include(x => x.Skills)
+            .Where(x => x.User!.Id == userId).ToListAsync();
         }
 
         public async Task<Character?> FindCharacterById(int id, int userId)
         {
             // Para incluir o usuario ao x.User <- aqui, nao necessario aqui nesse metodo, mas eh uma dica
             // funciona parecido ao { relations: { user : true } } ou { eager : true } do typeorm
+            // Weapon e Skills precisou
             return await _context.Characters
             .Include(x => x.User)
+            .Include(x => x.Weapon)
+            .Include(x => x.Skills)
             .FirstOrDefaultAsync(x => x.Id == id && x.User!.Id == userId);
         }
 
