@@ -1,3 +1,6 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
 using rpg.Models;
 using rpg.Repositories.AuthRepository;
 
@@ -6,8 +9,10 @@ namespace rpg.Services.AuthService
     public class AuthService : IAuthService
     {
         private readonly IAuthRepository _authRepository;
-        public AuthService(IAuthRepository authRepository)
+        private readonly IConfiguration _configuration;
+        public AuthService(IAuthRepository authRepository, IConfiguration configuration)
         {
+            _configuration = configuration;
             _authRepository = authRepository;
         }
 
@@ -17,13 +22,12 @@ namespace rpg.Services.AuthService
 
             try
             {
-                var user = await _authRepository.FindUserByUsername(username.ToLower());
-                if (user is null)
-                    throw new Exception("Username or password incorrect");
+                var user = await _authRepository.FindUserByUsername(username.ToLower())
+                ?? throw new Exception("Username or password incorrect");
                 var isValidPassword = VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
                 if (!isValidPassword)
                     throw new Exception("Username or password incorrect");
-                serviceResponse.Data = user.Id.ToString();
+                serviceResponse.Data = CreateToken(user);
             }
             catch (Exception ex)
             {
@@ -59,22 +63,48 @@ namespace rpg.Services.AuthService
             return await _authRepository.UserExists(username);
         }
 
-        private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
+        private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using (var hmac = new System.Security.Cryptography.HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
+            using var hmac = new System.Security.Cryptography.HMACSHA512();
+            passwordSalt = hmac.Key;
+            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         }
 
-        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
+        private static bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
             using (var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt))
             {
                 var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
                 return computedHash.SequenceEqual(passwordHash);
             }
+        }
+
+        private string CreateToken(User user)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username)
+            };
+
+            var appSettingsToken = _configuration.GetSection("AppSettings:Jwt.Token").Value
+            ?? throw new Exception("AppSettings:Jwt.Token is null");
+
+            SymmetricSecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(appSettingsToken));
+
+            SigningCredentials creds = new(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(1),
+                SigningCredentials = creds
+            };
+
+            JwtSecurityTokenHandler tokenHandler = new();
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
         }
     }
 }
