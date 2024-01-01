@@ -6,8 +6,10 @@ using rpg.Data;
 using rpg.Repositories.AuthRepository;
 using rpg.Repositories.CharacterRepository;
 using rpg.Repositories.UserRepository;
+using rpg.Repositories.WeaponRepository;
 using rpg.Services.AuthService;
 using rpg.Services.CharacterService;
+using rpg.Services.WeaponService;
 using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,9 +42,11 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IWeaponRepository, WeaponRepository>();
 
 builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IWeaponService, WeaponService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
