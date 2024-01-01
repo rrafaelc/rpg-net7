@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using rpg.Data;
+using rpg.Repositories.AuthRepository;
+using rpg.Services.AuthService;
 using rpg.Services.CharacterService;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,7 +20,11 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default"))
 );
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+
 builder.Services.AddScoped<ICharacterService, CharacterService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
 
