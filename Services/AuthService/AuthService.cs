@@ -2,18 +2,18 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using rpg.Models;
-using rpg.Repositories.AuthRepository;
+using rpg.Repositories.UserRepository;
 
 namespace rpg.Services.AuthService
 {
     public class AuthService : IAuthService
     {
-        private readonly IAuthRepository _authRepository;
+        private readonly IUserRepository _userRepository;
         private readonly IConfiguration _configuration;
-        public AuthService(IAuthRepository authRepository, IConfiguration configuration)
+        public AuthService(IUserRepository userRepository, IConfiguration configuration)
         {
             _configuration = configuration;
-            _authRepository = authRepository;
+            _userRepository = userRepository;
         }
 
         public async Task<ServiceResponse<string>> Login(string username, string password)
@@ -22,7 +22,7 @@ namespace rpg.Services.AuthService
 
             try
             {
-                var user = await _authRepository.FindUserByUsername(username.ToLower())
+                var user = await _userRepository.FindUserByUsername(username.ToLower())
                 ?? throw new Exception("Username or password incorrect");
                 var isValidPassword = VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt);
                 if (!isValidPassword)
@@ -53,14 +53,14 @@ namespace rpg.Services.AuthService
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
-            var userCreated = await _authRepository.AddUser(user);
+            var userCreated = await _userRepository.AddUser(user);
             serviceResponse.Data = userCreated.Id;
             return serviceResponse;
         }
 
         private async Task<bool> UserExists(string username)
         {
-            return await _authRepository.UserExists(username);
+            return await _userRepository.UserExists(username);
         }
 
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)

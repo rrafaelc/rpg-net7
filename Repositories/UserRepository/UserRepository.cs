@@ -16,5 +16,18 @@ namespace rpg.Repositories.UserRepository
         {
             return await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<User> AddUser(User user)
+        {
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<User?> FindUserByUsername(string username) =>
+            await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+
+        public async Task<bool> UserExists(string username) =>
+            await _context.Users.AnyAsync(x => x.Username == username);
     }
 }

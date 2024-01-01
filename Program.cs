@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using rpg.Data;
-using rpg.Repositories.AuthRepository;
 using rpg.Repositories.CharacterRepository;
 using rpg.Repositories.SkillRepository;
 using rpg.Repositories.UserRepository;
@@ -41,7 +40,6 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
-builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IWeaponRepository, WeaponRepository>();
 builder.Services.AddScoped<ISkillRepository, SkillRepository>();
