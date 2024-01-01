@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using rpg.Data;
 using rpg.Repositories.AuthRepository;
+using rpg.Repositories.CharacterRepository;
 using rpg.Services.AuthService;
 using rpg.Services.CharacterService;
 
@@ -21,6 +22,7 @@ builder.Services.AddDbContext<DataContext>(options =>
 );
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+builder.Services.AddScoped<ICharacterRepository, CharacterRepository>();
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 
 builder.Services.AddScoped<ICharacterService, CharacterService>();

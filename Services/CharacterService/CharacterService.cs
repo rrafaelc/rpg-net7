@@ -1,19 +1,18 @@
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using rpg.Data;
 using rpg.Dtos.Character;
 using rpg.Models;
+using rpg.Repositories.CharacterRepository;
 
 namespace rpg.Services.CharacterService
 {
     public class CharacterService : ICharacterService
     {
         private readonly IMapper _mapper;
-        private readonly DataContext _context;
+        public ICharacterRepository _characterRepository;
 
-        public CharacterService(IMapper mapper, DataContext context)
+        public CharacterService(IMapper mapper, ICharacterRepository characterRepository)
         {
-            _context = context;
+            _characterRepository = characterRepository;
             _mapper = mapper;
         }
 
@@ -24,9 +23,8 @@ namespace rpg.Services.CharacterService
             try
             {
                 var character = _mapper.Map<Character>(newCharacter);
-                _context.Characters.Add(character);
-                await _context.SaveChangesAsync();
-                serviceResponse.Data = _mapper.Map<CharacterResponseDto>(character);
+                var characterCreated = await _characterRepository.AddCharacter(character);
+                serviceResponse.Data = _mapper.Map<CharacterResponseDto>(characterCreated);
             }
             catch (Exception ex)
             {
@@ -39,7 +37,7 @@ namespace rpg.Services.CharacterService
 
         public async Task<ServiceResponse<List<CharacterResponseDto>>> GetAllCharacters()
         {
-            var dbCharacters = await _context.Characters.ToListAsync();
+            var dbCharacters = await _characterRepository.FindCharacters();
             var serviceResponse = new ServiceResponse<List<CharacterResponseDto>>
             {
                 Data = dbCharacters.Select(x => _mapper.Map<CharacterResponseDto>(x)).ToList()
@@ -50,7 +48,7 @@ namespace rpg.Services.CharacterService
         public async Task<ServiceResponse<CharacterResponseDto>> GetCharacterById(int id)
         {
             var serviceResponse = new ServiceResponse<CharacterResponseDto>();
-            var dbCharacter = await _context.Characters.FirstOrDefaultAsync(x => x.Id == id);
+            var dbCharacter = await _characterRepository.FindCharacterById(id);
 
             if (dbCharacter is not null)
                 serviceResponse.Data = _mapper.Map<CharacterResponseDto>(dbCharacter);
@@ -71,7 +69,7 @@ namespace rpg.Services.CharacterService
                 if (updatedCharacter == null)
                     throw new Exception("Invalid input: updatedCharacter is null");
 
-                var character = await _context.Characters.FirstOrDefaultAsync(x => x.Id == updatedCharacter.Id)
+                var character = await _characterRepository.FindCharacterById(updatedCharacter.Id)
                 ?? throw new Exception($"Character with id '{updatedCharacter.Id}' not found");
                 character.Name = updatedCharacter.Name ?? character.Name;
                 character.HitPoints = updatedCharacter.HitPoints ?? character.HitPoints;
@@ -81,7 +79,7 @@ namespace rpg.Services.CharacterService
                 character.Class = updatedCharacter.Class ?? character.Class;
                 serviceResponse.Data = _mapper.Map<CharacterResponseDto>(character);
 
-                await _context.SaveChangesAsync();
+                await _characterRepository.UpdateCharacter(character);
             }
             catch (Exception ex)
             {
@@ -94,10 +92,9 @@ namespace rpg.Services.CharacterService
 
         public async Task DeleteCharacter(int id)
         {
-            var dbCharacter = await _context.Characters.FirstOrDefaultAsync(x => x.Id == id)
+            var dbCharacter = await _characterRepository.FindCharacterById(id)
             ?? throw new Exception($"Character with id '{id}' not found"); ;
-            _context.Characters.Remove(dbCharacter);
-            await _context.SaveChangesAsync();
+            await _characterRepository.DeleteCharacter(dbCharacter);
         }
     }
 }
