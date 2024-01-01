@@ -27,7 +27,7 @@ namespace rpg.Services.WeaponService
 
             try
             {
-                var character = await _characterRepository.FindCharacterById(newWeapon.CharacterId, GetUserId())
+                var character = await _characterRepository.FindCharacterByIdAndUserId(newWeapon.CharacterId, GetUserId())
                 ?? throw new Exception("Character not found");
 
                 var weaponExists = await _weaponRepository.FindWeaponByCharacterId(character.Id);

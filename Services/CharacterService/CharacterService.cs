@@ -62,7 +62,7 @@ namespace rpg.Services.CharacterService
         public async Task<ServiceResponse<CharacterResponseDto>> GetCharacterById(int id)
         {
             var serviceResponse = new ServiceResponse<CharacterResponseDto>();
-            var dbCharacter = await _characterRepository.FindCharacterById(id, GetUserId());
+            var dbCharacter = await _characterRepository.FindCharacterByIdAndUserId(id, GetUserId());
 
             if (dbCharacter is not null)
                 serviceResponse.Data = _mapper.Map<CharacterResponseDto>(dbCharacter);
@@ -83,7 +83,7 @@ namespace rpg.Services.CharacterService
                 if (updatedCharacter == null)
                     throw new Exception("Invalid input: updatedCharacter is null");
 
-                var character = await _characterRepository.FindCharacterById(updatedCharacter.Id, GetUserId())
+                var character = await _characterRepository.FindCharacterByIdAndUserId(updatedCharacter.Id, GetUserId())
                 ?? throw new Exception($"Character with id '{updatedCharacter.Id}' not found");
                 character.Name = updatedCharacter.Name ?? character.Name;
                 character.HitPoints = updatedCharacter.HitPoints ?? character.HitPoints;
@@ -106,7 +106,7 @@ namespace rpg.Services.CharacterService
 
         public async Task DeleteCharacter(int id)
         {
-            var dbCharacter = await _characterRepository.FindCharacterById(id, GetUserId())
+            var dbCharacter = await _characterRepository.FindCharacterByIdAndUserId(id, GetUserId())
             ?? throw new Exception($"Character with id '{id}' not found");
             await _characterRepository.DeleteCharacter(dbCharacter);
         }
@@ -117,7 +117,7 @@ namespace rpg.Services.CharacterService
 
             try
             {
-                var character = await _characterRepository.FindCharacterById(newCharacterSkill.CharacterId, GetUserId())
+                var character = await _characterRepository.FindCharacterByIdAndUserId(newCharacterSkill.CharacterId, GetUserId())
                 ?? throw new Exception($"Character with id '{newCharacterSkill.CharacterId}' not found");
                 var skill = await _skillRepository.FindSkillById(newCharacterSkill.SkillId)
                 ?? throw new Exception($"Skill with id '{newCharacterSkill.SkillId}' not found");

@@ -9,6 +9,7 @@ using rpg.Repositories.UserRepository;
 using rpg.Repositories.WeaponRepository;
 using rpg.Services.AuthService;
 using rpg.Services.CharacterService;
+using rpg.Services.FightService;
 using rpg.Services.WeaponService;
 using Swashbuckle.AspNetCore.Filters;
 
@@ -47,6 +48,7 @@ builder.Services.AddScoped<ISkillRepository, SkillRepository>();
 builder.Services.AddScoped<ICharacterService, CharacterService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IWeaponService, WeaponService>();
+builder.Services.AddScoped<IFightService, FightService>();
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
