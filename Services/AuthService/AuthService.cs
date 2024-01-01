@@ -87,8 +87,8 @@ namespace rpg.Services.AuthService
                 new Claim(ClaimTypes.Name, user.Username)
             };
 
-            var appSettingsToken = _configuration.GetSection("AppSettings:Jwt.Token").Value
-            ?? throw new Exception("AppSettings:Jwt.Token is null");
+            var appSettingsToken = _configuration.GetSection("AppSettings:Token").Value
+            ?? throw new Exception("AppSettings:Token is null");
 
             SymmetricSecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(appSettingsToken));
 

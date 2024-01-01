@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using rpg.Dtos.Character;
 using rpg.Models;
@@ -5,6 +6,7 @@ using rpg.Services.CharacterService;
 
 namespace rpg.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class CharacterController : ControllerBase
@@ -16,6 +18,7 @@ namespace rpg.Controllers
             _characterService = characterService;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<ServiceResponse<List<CharacterResponseDto>>>> Get()
         {
