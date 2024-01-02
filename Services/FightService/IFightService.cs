@@ -7,5 +7,6 @@ namespace rpg.Services.FightService
     {
         Task<ServiceResponse<AttackResultDto>> WeaponAttack(WeaponAttackRequestDto request);
         Task<ServiceResponse<AttackResultDto>> SkillAttack(SkillAttackRequestDto request);
+        Task<ServiceResponse<FightResultDto>> Fight(FightRequestDto request);
     }
 }
