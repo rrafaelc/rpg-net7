@@ -43,5 +43,14 @@ namespace rpg.Controllers
                 return BadRequest(response);
             return Ok(response);
         }
+
+        [HttpGet]
+        public async Task<ActionResult<ServiceResponse<List<HighScoreDto>>>> GetHighScore()
+        {
+            var response = await _fightService.GetHighScore();
+            if (!response.Success)
+                return BadRequest(response);
+            return Ok(response);
+        }
     }
 }
