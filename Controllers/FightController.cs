@@ -6,7 +6,6 @@ using rpg.Services.FightService;
 
 namespace rpg.Controllers
 {
-    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FightController : ControllerBase
@@ -19,9 +18,18 @@ namespace rpg.Controllers
         }
 
         [HttpPost("Weapon")]
-        public async Task<ActionResult<ServiceResponse<AttackResultDto>>> Post(WeaponAttackRequestDto request)
+        public async Task<ActionResult<ServiceResponse<AttackResultDto>>> WeaponAttack(WeaponAttackRequestDto request)
         {
             var response = await _fightService.WeaponAttack(request);
+            if (!response.Success)
+                return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpPost("Skill")]
+        public async Task<ActionResult<ServiceResponse<AttackResultDto>>> SkillAttack(SkillAttackRequestDto request)
+        {
+            var response = await _fightService.SkillAttack(request);
             if (!response.Success)
                 return BadRequest(response);
             return Ok(response);
